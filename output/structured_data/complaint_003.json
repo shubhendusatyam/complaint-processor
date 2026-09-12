@@ -1,0 +1,17 @@
+{
+  "source_file": "complaint_003.txt",
+  "file_type": "txt",
+  "processing_status": "success",
+  "extraction": {
+    "customer_name": "Priya Raghavan",
+    "email": "priya.raghavan@example.com",
+    "phone_number": null,
+    "complaint_category": "General Enquiry",
+    "issue_description": "The customer is inquiring about the Model X400 water purifier, specifically about the filter cartridge replacement frequency, whether professional installation is included in the price, and what the warranty covers in the first year.",
+    "resolution_provided": null,
+    "is_complaint": false,
+    "escalation_required": false,
+    "supporting_document_available": false,
+    "case_status": "Open"
+  }
+}

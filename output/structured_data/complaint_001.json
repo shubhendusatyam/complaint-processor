@@ -1,0 +1,17 @@
+{
+  "source_file": "complaint_001.txt",
+  "file_type": "txt",
+  "processing_status": "success",
+  "extraction": {
+    "customer_name": "Anita Deshpande",
+    "email": "anita.deshpande@example.com",
+    "phone_number": "+91 98200 11223",
+    "complaint_category": "Product Defect",
+    "issue_description": "The purifier stopped dispensing water four days after installation and showed a filter error despite being new. The customer called the helpline twice on 24 and 25 February.",
+    "resolution_provided": "A replacement unit was shipped on 08 March and installed by an engineer on 12 March. The faulty unit was collected at the same visit. The customer confirmed the replacement is working correctly.",
+    "is_complaint": true,
+    "escalation_required": false,
+    "supporting_document_available": true,
+    "case_status": "Closed"
+  }
+}

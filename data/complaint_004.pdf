@@ -1,0 +1,69 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 5 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+5 0 obj
+<< /Length 659 >>
+stream
+BT
+/F1 11 Tf
+15 TL
+60 740 Td
+(SUPPORT TICKET 88213) Tj
+T*
+(Channel: Email) Tj
+T*
+(Received: 11 March 2024) Tj
+T*
+() Tj
+T*
+(Contact address on file: r.menon2291@example.com) Tj
+T*
+() Tj
+T*
+(Ticket body:) Tj
+T*
+(Bought an air purifier from your store last month. The filter replacement) Tj
+T*
+(indicator stays red even after fitting a new filter, and the reset button) Tj
+T*
+(does nothing. I have tried unplugging the unit overnight as the manual) Tj
+T*
+(suggests.) Tj
+T*
+() Tj
+T*
+(No name or phone number was supplied with this ticket and no attachments) Tj
+T*
+(were included.) Tj
+T*
+() Tj
+T*
+(Agent notes: No action taken yet, awaiting triage.) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000185 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1021
+%%EOF

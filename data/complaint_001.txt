@@ -1,0 +1,24 @@
+CUSTOMER COMPLAINT RECORD
+Reference: CMP-2024-001
+Date Received: 04 March 2024
+
+Customer Name: Anita Deshpande
+Email: anita.deshpande@example.com
+Phone: +91 98200 11223
+
+Product / Service: Model X400 Water Purifier
+Purchase Date: 18 February 2024
+
+Complaint Description:
+The purifier stopped dispensing water four days after installation. The
+display showed a filter error even though the unit was brand new. The
+customer called the helpline twice on 24 and 25 February.
+
+Resolution Provided:
+A replacement unit was shipped on 08 March and installed by an engineer on
+12 March. The faulty unit was collected at the same visit. The customer
+confirmed the replacement is working correctly.
+
+Escalation: Not required.
+Supporting Information: Copy of the original invoice attached.
+Case Status: Closed - Resolved

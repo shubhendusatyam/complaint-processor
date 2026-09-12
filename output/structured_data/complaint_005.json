@@ -1,0 +1,17 @@
+{
+  "source_file": "complaint_005.docx",
+  "file_type": "docx",
+  "processing_status": "success",
+  "extraction": {
+    "customer_name": "Sunita Kulkarni",
+    "email": "sunita.kulkarni@example.com",
+    "phone_number": "+91 99100 55447",
+    "complaint_category": "Product Defect",
+    "issue_description": "The air purifier arrived with a cracked front panel. The unit powers on and appears to function, but the damage is visible from the front of the room and the customer does not want to keep it in this state.",
+    "resolution_provided": "A replacement front panel has been ordered from the supplier. The customer was told it would arrive within two weeks and that an engineer would fit it. The part has not yet arrived.",
+    "is_complaint": true,
+    "escalation_required": false,
+    "supporting_document_available": true,
+    "case_status": "In Progress"
+  }
+}

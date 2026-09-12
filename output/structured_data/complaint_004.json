@@ -1,0 +1,17 @@
+{
+  "source_file": "complaint_004.pdf",
+  "file_type": "pdf",
+  "processing_status": "success",
+  "extraction": {
+    "customer_name": null,
+    "email": "r.menon2291@example.com",
+    "phone_number": null,
+    "complaint_category": "Product Defect",
+    "issue_description": "The customer reported that the filter replacement indicator on their air purifier remains red even after installing a new filter, and the reset button is unresponsive. They have attempted to unplug the unit overnight as per the manual's instructions.",
+    "resolution_provided": null,
+    "is_complaint": true,
+    "escalation_required": false,
+    "supporting_document_available": false,
+    "case_status": "Open"
+  }
+}
