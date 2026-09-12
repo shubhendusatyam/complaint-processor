@@ -46,7 +46,7 @@ Confirmed choices for this project:
 
 Six layers, each with one responsibility.
 
-- **Ingestion.** One loader per file format behind a shared interface, returning extracted text plus source metadata. Format detection happens here and nowhere else.
+- **Ingestion.** Built. One loader per format behind a shared `extract_text(path) -> str` interface, with `registry.py` as the only module that knows which formats are supported. Adding a format means writing a loader and adding one entry to `LOADERS`. Loaders raise `DocumentLoadError`; the caller decides whether to skip. Note that the Word loader reads table cells as well as paragraphs, because complaint forms put customer details in tables.
 - **Schemas.** The Pydantic models, including the extraction model above and the models for the email and summary outputs.
 - **Chains.** Three LangChain chains, one per AI task. Each owns its own prompt template and output parser.
 - **Orchestration.** Runs the three chains for a single document, and fans out across the document set.
