@@ -114,6 +114,16 @@ def validate(config: Settings | None = None) -> Settings:
             "key:\n    Copy-Item .env.example .env"
         )
 
+    # Catch an unedited template before the request goes out, so the failure
+    # names the real problem instead of arriving as a 401 from OpenAI.
+    if "REPLACE" in config.openai_api_key.upper() or config.openai_api_key.endswith(
+        "your-key-here"
+    ):
+        raise ConfigError(
+            "OPENAI_API_KEY is still the placeholder value. Edit .env and set your "
+            "real key from https://platform.openai.com/api-keys"
+        )
+
     if config.max_workers < 1:
         raise ConfigError(f"MAX_WORKERS must be at least 1, got {config.max_workers}")
 
