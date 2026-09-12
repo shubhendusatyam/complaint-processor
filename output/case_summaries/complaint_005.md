@@ -1,10 +1,10 @@
 # Case Summary: complaint_005.docx
 
 ## Case Overview
-Customer Sunita Kulkarni reported a product defect with her air purifier, which arrived with a cracked front panel.
+Customer Sunita Kulkarni reported a product defect with her air purifier, specifically a cracked front panel.
 
 ## Key Issue
-The air purifier has a visible crack on the front panel despite functioning properly.
+The air purifier arrived damaged with a visible crack on the front panel.
 
 ## Action Taken
 A replacement front panel has been ordered from the supplier, and the customer was informed it would arrive within two weeks.

@@ -7,7 +7,7 @@
     "email": "m.faruqui@example.com",
     "phone_number": "+91 90040 77321",
     "complaint_category": "Product Defect",
-    "issue_description": "The washing machine has leaked from the base since it was installed on 29 January. The customer has called the helpline multiple times, but no engineer has visited despite being promised a visit within 48 hours eleven days ago. The leak has caused damage to the flooring in the utility room.",
+    "issue_description": "The washing machine has leaked from the base since it was installed on 29 January. The customer has called the helpline multiple times, and an engineer was promised to visit within 48 hours, but no one has come after eleven days.",
     "resolution_provided": null,
     "is_complaint": true,
     "escalation_required": true,

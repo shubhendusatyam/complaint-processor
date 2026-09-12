@@ -8,7 +8,7 @@ missing field is a correct answer, an invented one is not.
 from __future__ import annotations
 
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import Runnable
+from langchain_core.runnables import Runnable, RunnableLambda
 
 from ..ingestion.base import SourceDocument
 from ..logging_setup import get_logger
@@ -53,8 +53,15 @@ def build_extraction_chain(llm=None, retry: bool = True) -> Runnable:
     )
     model = llm if llm is not None else build_llm(temperature=0.0)
     structured = model.with_structured_output(ComplaintExtraction, strict=True)
-    chain = prompt | structured
+    # Truncation belongs inside the chain, not in the caller: the orchestrator
+    # invokes this runnable directly, so a guard applied outside is one a
+    # caller can silently skip.
+    chain = RunnableLambda(_truncate_input) | prompt | structured
     return with_standard_retry(chain) if retry else chain
+
+
+def _truncate_input(payload: dict) -> dict:
+    return {**payload, "document_text": truncate(payload["document_text"])}
 
 
 def extract(document: SourceDocument, chain: Runnable | None = None) -> ComplaintExtraction:
@@ -68,7 +75,7 @@ def extract(document: SourceDocument, chain: Runnable | None = None) -> Complain
         result = chain.invoke(
             {
                 "filename": document.filename,
-                "document_text": truncate(document.text),
+                "document_text": document.text,
             }
         )
     except Exception as exc:

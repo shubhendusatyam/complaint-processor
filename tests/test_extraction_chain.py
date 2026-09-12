@@ -104,3 +104,32 @@ class TestTruncation:
         got = truncate("x" * (MAX_DOCUMENT_CHARS + 500))
         assert got.endswith("[document truncated]")
         assert len(got) < MAX_DOCUMENT_CHARS + 100
+
+
+class TestTruncationIsInsideTheChain:
+    """The orchestrator invokes the chain directly, bypassing extract().
+
+    The length guard therefore has to live in the chain itself, or it is dead
+    in the path that actually runs.
+    """
+
+    def test_oversized_input_is_trimmed_before_the_prompt(self):
+        captured = {}
+
+        class Recorder(FakeMessagesListChatModel):
+            def with_structured_output(self, schema, **kwargs):
+                def record(prompt_value):
+                    captured["text"] = prompt_value.to_string()
+                    return EXTRACTED
+
+                return RunnableLambda(record)
+
+        chain = build_extraction_chain(
+            llm=Recorder(responses=[AIMessage(content="")]), retry=False
+        )
+        chain.invoke(
+            {"filename": "huge.txt", "document_text": "x" * (MAX_DOCUMENT_CHARS + 5_000)}
+        )
+
+        assert "[document truncated]" in captured["text"]
+        assert len(captured["text"]) < MAX_DOCUMENT_CHARS + 2_000
