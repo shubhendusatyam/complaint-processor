@@ -1,0 +1,24 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Secrets - the real key never gets committed, .env.example documents the shape
+.env
+
+# Run logs are regenerated on every run; sample outputs are NOT ignored
+# because the assignment requires them to be submitted.
+output/run.log
+
+# Tooling
+.pytest_cache/
+.streamlit/secrets.toml
+
+# OS
+Thumbs.db
+desktop.ini
