@@ -38,7 +38,9 @@ Confirmed choices for this project:
 | Tests | pytest |
 | Config | python-dotenv |
 
-`OPENAI_API_KEY` is read from a `.env` file that stays out of version control.
+`OPENAI_API_KEY` is read from a `.env` file that stays out of version control. Copy `.env.example` to `.env` to get started.
+
+**LangChain 1.x is installed and required.** `requirements.txt` pins `>=1.0,<2`. The legacy `LLMChain` and `PydanticOutputParser` pattern from the 0.x line does not apply. Build the three chains with `ChatOpenAI(...).with_structured_output(Model)` composed via LCEL.
 
 ## Target architecture
 
@@ -55,20 +57,23 @@ The rule that keeps this clean: entry points and the Streamlit app hold no promp
 
 ## Commands
 
-Intended commands. Correct them against the real project once it exists.
+Setup is done; `.venv` exists with dependencies installed. Entry points arrive in Phase 8.
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+.\.venv\Scripts\Activate.ps1      # then plain `python` and `pytest` work
+pip install -r requirements.txt   # after changing dependencies
 
-python main.py                    # batch run over data/
-streamlit run app.py              # browser UI
+python main.py                    # batch run over data/ (Phase 8)
+streamlit run app.py              # browser UI (Phase 8)
 
 pytest                            # full suite
 pytest tests\test_extraction.py::test_missing_phone_number   # single test
 ```
 
+Without activating, call the interpreter directly as `.\.venv\Scripts\python.exe`.
+
 ## Environment notes
 
-The shell here is Windows PowerShell 5.1. It has no `&&` chaining, so sequential commands use `;` with an `if ($?)` guard when the second step depends on the first. The repository path contains a space, so quote paths in shell commands.
+The shell is Windows PowerShell 5.1, which has no `&&` chaining. Sequential commands use `;` with an `if ($?)` guard when the second step depends on the first. The repository path contains a space, so quote paths.
+
+**Git is installed but absent from the shell PATH.** Invoke it as `& "C:\Program Files\Git\cmd\git.exe"`. Repository-local `user.name` and `user.email` are set; change them with `git config user.name "..."` if the attribution is wrong.
