@@ -47,7 +47,7 @@ Confirmed choices for this project:
 Six layers, each with one responsibility.
 
 - **Ingestion.** Built. One loader per format behind a shared `extract_text(path) -> str` interface, with `registry.py` as the only module that knows which formats are supported. Adding a format means writing a loader and adding one entry to `LOADERS`. Loaders raise `DocumentLoadError`; the caller decides whether to skip. Note that the Word loader reads table cells as well as paragraphs, because complaint forms put customer details in tables.
-- **Schemas.** The Pydantic models, including the extraction model above and the models for the email and summary outputs.
+- **Schemas.** Built, in `schemas.py`. Holds `ComplaintExtraction` (the ten graded fields), `CustomerEmail`, `CaseSummary`, and `ProcessingResult`, which bundles one document's outputs and carries failures into the report instead of dropping them. Category and status are enums, so the report can be grouped reliably. Validators map placeholder values such as "N/A" to null and discard anything in the email field that is not an address. **The field descriptions are sent to the model as part of the JSON schema and are the main lever on extraction quality; treat them as prompt text, not comments.**
 - **Chains.** Three LangChain chains, one per AI task. Each owns its own prompt template and output parser.
 - **Orchestration.** Runs the three chains for a single document, and fans out across the document set.
 - **Reporting.** Writes the four output artifacts under `output/`: structured data, customer emails, case summaries, and the consolidated `final_report.csv`.
