@@ -12,7 +12,9 @@ LOG_FORMAT = "%(asctime)s %(levelname)-8s %(name)s | %(message)s"
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 # These emit one INFO line per HTTP request, which buries batch progress.
-NOISY_LOGGERS = ("httpx", "httpcore", "openai", "urllib3")
+# Matched by prefix: the OpenAI client vendors its transport under names like
+# "httpx2", so an exact-name list silently misses them.
+NOISY_LOGGER_PREFIXES = ("httpx", "httpcore", "openai", "urllib3", "langsmith")
 
 
 def configure_logging(level: str | None = None, log_path: Path | None = None) -> None:
@@ -43,8 +45,27 @@ def configure_logging(level: str | None = None, log_path: Path | None = None) ->
     root.addHandler(console)
     root.addHandler(file_handler)
 
-    for name in NOISY_LOGGERS:
-        logging.getLogger(name).setLevel(logging.WARNING)
+    quieten_noisy_loggers()
+
+
+def quieten_noisy_loggers() -> None:
+    """Raise third-party HTTP loggers to WARNING, by name prefix.
+
+    Applied to loggers that already exist and, via a filter on the root, to any
+    that appear later once the API clients are constructed.
+    """
+    for name in list(logging.root.manager.loggerDict):
+        if name.startswith(NOISY_LOGGER_PREFIXES):
+            logging.getLogger(name).setLevel(logging.WARNING)
+
+    for handler in logging.getLogger().handlers:
+        handler.addFilter(_not_noisy)
+
+
+def _not_noisy(record: logging.LogRecord) -> bool:
+    if record.levelno >= logging.WARNING:
+        return True
+    return not record.name.startswith(NOISY_LOGGER_PREFIXES)
 
 
 def get_logger(name: str) -> logging.Logger:

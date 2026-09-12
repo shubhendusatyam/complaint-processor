@@ -51,7 +51,7 @@ Six layers, each with one responsibility.
 - **Chains.** All three are built. `base.py` holds the model factory, the retry policy and an input length guard, so the model is changed in one place. `extraction.py` binds its prompt to `ComplaintExtraction` with `strict=True`, verified working against the live API. Chain builders accept `retry=False` so tests skip the backoff. Failures raise `ChainError` naming the file, which is what lets the batch continue.
 - **Orchestration.** Built, in `orchestrator.py`. `Workflow.build()` constructs the three chains once and shares them across every document. Within a document, extraction runs first because the other two consume it, then email and summary run together via `RunnableParallel`. Across documents a thread pool fans out, and results are re-sorted into input order so the report is reproducible. `process_document` and `process_file` never raise: every failure becomes a `ProcessingResult` carrying the reason.
 - **Reporting.** Built, in `reporting.py`. `write_all(results)` produces all four artifacts and returns counts. JSON extractions are wrapped with their source filename and status; emails and summaries are skipped rather than written empty when a task failed. The CSV uses `utf-8-sig` so Excel reads accented names correctly, and carries a row for every input file including failures. `output_stem` folds the extension into the name when two sources share a stem, so `complaint_001.txt` and `complaint_001.pdf` cannot overwrite each other.
-- **Entry points.** A CLI and a Streamlit app, both thin.
+- **Entry points.** Built. `main.py` parses arguments, delegates, and prints a summary; it exits 0 on a clean batch, 1 when any document failed or none were found, and 2 on a configuration problem. `app.py` runs the same orchestrator, caching the workflow with `st.cache_resource` and staging uploads to a temp folder so the loaders read them by path exactly as the CLI does.
 
 A `ProcessingResult` has three states, not two. `failed` means no extraction, `partial` means the structured data is sound but a follow-up task is missing, and `success` means all three outputs exist. `partial` is worth keeping distinct: it needs one task re-run, not the whole document.
 
@@ -61,14 +61,16 @@ The rule that keeps this clean: entry points and the Streamlit app hold no promp
 
 ## Commands
 
-Setup is done; `.venv` exists with dependencies installed. Entry points arrive in Phase 8.
+Setup is done; `.venv` exists with dependencies installed.
 
 ```powershell
 .\.venv\Scripts\Activate.ps1      # then plain `python` and `pytest` work
 pip install -r requirements.txt   # after changing dependencies
 
-python main.py                    # batch run over data/ (Phase 8)
-streamlit run app.py              # browser UI (Phase 8)
+python main.py                    # batch run over data/
+python main.py --workers 8 --log-level DEBUG
+streamlit run app.py              # browser UI
+python -m tests.make_sample_data  # regenerate data/ samples
 
 pytest                            # full suite
 pytest tests\test_schemas.py::TestNullNormalization          # single class
