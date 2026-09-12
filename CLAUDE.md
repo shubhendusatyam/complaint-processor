@@ -48,7 +48,7 @@ Six layers, each with one responsibility.
 
 - **Ingestion.** Built. One loader per format behind a shared `extract_text(path) -> str` interface, with `registry.py` as the only module that knows which formats are supported. Adding a format means writing a loader and adding one entry to `LOADERS`. Loaders raise `DocumentLoadError`; the caller decides whether to skip. Note that the Word loader reads table cells as well as paragraphs, because complaint forms put customer details in tables.
 - **Schemas.** Built, in `schemas.py`. Holds `ComplaintExtraction` (the ten graded fields), `CustomerEmail`, `CaseSummary`, and `ProcessingResult`, which bundles one document's outputs and carries failures into the report instead of dropping them. Category and status are enums, so the report can be grouped reliably. Validators map placeholder values such as "N/A" to null and discard anything in the email field that is not an address. **The field descriptions are sent to the model as part of the JSON schema and are the main lever on extraction quality; treat them as prompt text, not comments.**
-- **Chains.** Three LangChain chains, one per AI task. Each owns its own prompt template and output parser.
+- **Chains.** Extraction is built; email and summary arrive in Phase 5. `base.py` holds the model factory, the retry policy and an input length guard, so the model is changed in one place. `extraction.py` binds its prompt to `ComplaintExtraction` with `strict=True`, verified working against the live API. Chain builders accept `retry=False` so tests skip the backoff. Failures raise `ChainError` naming the file, which is what lets the batch continue.
 - **Orchestration.** Runs the three chains for a single document, and fans out across the document set.
 - **Reporting.** Writes the four output artifacts under `output/`: structured data, customer emails, case summaries, and the consolidated `final_report.csv`.
 - **Entry points.** A CLI and a Streamlit app, both thin.
@@ -67,7 +67,7 @@ python main.py                    # batch run over data/ (Phase 8)
 streamlit run app.py              # browser UI (Phase 8)
 
 pytest                            # full suite
-pytest tests\test_extraction.py::test_missing_phone_number   # single test
+pytest tests\test_schemas.py::TestNullNormalization          # single class
 ```
 
 Without activating, call the interpreter directly as `.\.venv\Scripts\python.exe`.
