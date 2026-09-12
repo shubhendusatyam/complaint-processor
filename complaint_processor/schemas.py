@@ -248,11 +248,26 @@ class ProcessingResult(BaseModel):
 
     @property
     def succeeded(self) -> bool:
-        return self.error is None and self.extraction is not None
+        """Whether anything usable came out of this document.
+
+        The extraction is what everything else is built from, so a document
+        that produced one is worth keeping even if a later task failed.
+        """
+        return self.extraction is not None
 
     @property
     def status(self) -> str:
-        return "success" if self.succeeded else "failed"
+        """One of failed, partial or success.
+
+        'partial' matters for the report: it flags a case whose structured data
+        is sound but whose email or summary is missing, which is a re-run of one
+        task rather than of the document.
+        """
+        if self.extraction is None:
+            return "failed"
+        if self.customer_email is None or self.case_summary is None:
+            return "partial"
+        return "success"
 
     @classmethod
     def failure(cls, filename: str, file_type: str, error: str) -> ProcessingResult:

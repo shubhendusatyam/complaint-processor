@@ -53,3 +53,30 @@ def truncate(text: str, limit: int = MAX_DOCUMENT_CHARS) -> str:
     if len(text) <= limit:
         return text
     return text[:limit] + "\n\n[document truncated]"
+
+
+def format_case_data(extraction) -> str:
+    """Render an extraction as a readable block for the downstream prompts.
+
+    The email and summary tasks consume the validated extraction rather than
+    the raw document, so this is the only view of the case they get. Absent
+    fields are labelled explicitly, so the model is told what it does not know
+    instead of being left to guess.
+    """
+    def show(value: object) -> str:
+        return "not recorded" if value is None else str(value)
+
+    return "\n".join(
+        [
+            f"Customer name: {show(extraction.customer_name)}",
+            f"Email: {show(extraction.email)}",
+            f"Phone: {show(extraction.phone_number)}",
+            f"Complaint category: {extraction.complaint_category.value}",
+            f"Is a complaint: {extraction.is_complaint}",
+            f"Issue description: {extraction.issue_description}",
+            f"Resolution already provided: {show(extraction.resolution_provided)}",
+            f"Escalation required: {extraction.escalation_required}",
+            f"Supporting evidence supplied: {extraction.supporting_document_available}",
+            f"Case status: {extraction.case_status.value}",
+        ]
+    )

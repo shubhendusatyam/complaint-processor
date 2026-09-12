@@ -117,12 +117,22 @@ class TestRendering:
 
 
 class TestProcessingResult:
+    def _summary(self):
+        return CaseSummary(
+            case_overview="o",
+            key_issue="k",
+            action_taken="a",
+            current_status="c",
+            recommended_next_action="n",
+        )
+
     def test_success_row_carries_the_extracted_values(self):
         result = ProcessingResult(
             filename="complaint_001.txt",
             file_type="txt",
             extraction=ComplaintExtraction(**VALID),
             customer_email=CustomerEmail(subject="s", body="b"),
+            case_summary=self._summary(),
         )
         row = result.to_report_row()
         assert result.succeeded is True
@@ -130,8 +140,19 @@ class TestProcessingResult:
         assert row["complaint_category"] == "Product Defect"
         assert row["case_status"] == "Resolved"
         assert row["customer_email_generated"] is True
-        assert row["case_summary_generated"] is False
+        assert row["case_summary_generated"] is True
         assert row["error"] is None
+
+    def test_missing_followup_is_reported_as_partial(self):
+        """Structured data is sound but one task is missing: re-run that task."""
+        result = ProcessingResult(
+            filename="complaint_001.txt",
+            file_type="txt",
+            extraction=ComplaintExtraction(**VALID),
+            customer_email=CustomerEmail(subject="s", body="b"),
+        )
+        assert result.succeeded is True
+        assert result.status == "partial"
 
     def test_failed_document_still_produces_a_row(self):
         """A failure must appear in the report, not vanish from it."""
@@ -146,8 +167,9 @@ class TestProcessingResult:
         result = ProcessingResult.failure("x.txt", "txt", "boom")
         assert list(result.to_report_row()) == REPORT_COLUMNS
 
-    def test_extraction_alone_counts_as_success(self):
+    def test_extraction_alone_is_usable_but_incomplete(self):
         result = ProcessingResult(
             filename="a.txt", file_type="txt", extraction=ComplaintExtraction(**VALID)
         )
         assert result.succeeded is True
+        assert result.status == "partial"
