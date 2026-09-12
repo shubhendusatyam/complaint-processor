@@ -144,7 +144,8 @@ class ComplaintExtraction(BaseModel):
         description=(
             "Current state of the case based only on what the document says. Use "
             "Resolved only when the document confirms the issue was fixed and the "
-            "customer was informed."
+            "customer was informed. Use Escalated whenever escalation_required is "
+            "true and the case is not yet resolved, so that the two fields agree."
         ),
     )
 
