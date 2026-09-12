@@ -76,4 +76,4 @@ Without activating, call the interpreter directly as `.\.venv\Scripts\python.exe
 
 The shell is Windows PowerShell 5.1, which has no `&&` chaining. Sequential commands use `;` with an `if ($?)` guard when the second step depends on the first. The repository path contains a space, so quote paths.
 
-**Git is installed but absent from the shell PATH.** Invoke it as `& "C:\Program Files\Git\cmd\git.exe"`. Repository-local `user.name` and `user.email` are set; change them with `git config user.name "..."` if the attribution is wrong.
+Git 2.55 is installed at `C:\Program Files\Git\cmd`, which is on the user PATH. If bare `git` reports "not recognized", the session's environment predates the install and needs a restart; until then invoke it by full path as `& "C:\Program Files\Git\cmd\git.exe"`. Repository-local `user.name` and `user.email` are set; change them with `git config user.name "..."` if the attribution is wrong.
