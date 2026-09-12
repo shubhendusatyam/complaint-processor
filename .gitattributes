@@ -1,0 +1,12 @@
+# Default: let git normalize text in the repository.
+* text=auto
+
+# Binary formats. Without these git classifies the generated PDFs as text,
+# because they are mostly ASCII with no null bytes, and rewrites their line
+# endings on checkout. That shifts every byte offset and breaks the PDF
+# cross-reference table, so a fresh clone gets unreadable sample documents.
+*.pdf   binary
+*.docx  binary
+*.xlsx  binary
+*.png   binary
+*.jpg   binary
