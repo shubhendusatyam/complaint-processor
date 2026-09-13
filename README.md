@@ -206,6 +206,7 @@ Opens at <http://localhost:8000>, which serves a minimal upload form.
 | `GET /api/samples` | Names of the documents in `data/` |
 | `POST /api/process` | Process one uploaded file (multipart `file` field) |
 | `POST /api/process/sample/{name}` | Process one committed sample |
+| `GET /api/diagnostics` | What the function can see on disk; for deployment problems |
 
 ```powershell
 curl.exe -F "file=@data/complaint_001.txt" http://localhost:8000/api/process
@@ -298,8 +299,16 @@ Deploying to Vercel:
 1. Import the repository at <https://vercel.com/new>.
 2. Add `OPENAI_API_KEY` under **Settings → Environment Variables**. The key is
    supplied by the platform, never committed — `.env` is for local runs only.
-3. Deploy. `vercel.json` routes every path to the function and allows 60
-   seconds per request.
+3. Deploy. `vercel.json` routes every path to the function, allows 60 seconds
+   per request, and — importantly — names `complaint_processor/` and `data/` in
+   `includeFiles`. The runtime bundles the entrypoint and its declared
+   dependencies, not sibling packages, so without that glob the import fails and
+   every request returns `FUNCTION_INVOCATION_FAILED`.
+
+If a deployment does misbehave, `GET /api/diagnostics` reports whether the
+package was bundled, the Python version, and whether the key is set, without
+disclosing any values. A packaging failure is otherwise invisible: the module
+fails to import and the platform reports only that the invocation failed.
 
 The CLI and the Streamlit app remain the primary interfaces, and both run
 locally as the specification intends.
