@@ -9,18 +9,59 @@ same orchestrator the command line uses, so the two interfaces cannot drift.
 from __future__ import annotations
 
 import dataclasses
+import os
 import tempfile
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
-from complaint_processor.config import ConfigError, settings, validate
-from complaint_processor.ingestion.registry import SUPPORTED_EXTENSIONS
-from complaint_processor.logging_setup import configure_logging
-from complaint_processor.orchestrator import Workflow, process_batch
-from complaint_processor.reporting import write_all
-from complaint_processor.schemas import REPORT_COLUMNS, ProcessingResult
+# Secret names shared with .env; see .streamlit/secrets.toml.example.
+_SECRET_KEYS = (
+    "OPENAI_API_KEY",
+    "OPENAI_MODEL",
+    "OPENAI_TEMPERATURE",
+    "MAX_WORKERS",
+    "LOG_LEVEL",
+)
+
+
+def _export_secrets_to_env() -> None:
+    """Copy Streamlit secrets into the environment.
+
+    Streamlit Community Cloud supplies credentials through st.secrets and has no
+    .env file. config.py reads the environment and builds its Settings at import
+    time, so this has to run before the package is imported anywhere — which is
+    why the call sits between the imports rather than below them.
+
+    An existing environment variable always wins, so this never overrides a key
+    that is already set, and locally it does nothing at all.
+    """
+    try:
+        secrets = st.secrets
+    except Exception:
+        # No secrets file, which is the normal local case: .env covers it.
+        return
+
+    for name in _SECRET_KEYS:
+        if os.environ.get(name):
+            continue
+        try:
+            value = secrets[name]
+        except Exception:
+            continue
+        if value is not None:
+            os.environ[name] = str(value)
+
+
+_export_secrets_to_env()
+
+from complaint_processor.config import ConfigError, settings, validate  # noqa: E402
+from complaint_processor.ingestion.registry import SUPPORTED_EXTENSIONS  # noqa: E402
+from complaint_processor.logging_setup import configure_logging  # noqa: E402
+from complaint_processor.orchestrator import Workflow, process_batch  # noqa: E402
+from complaint_processor.reporting import write_all  # noqa: E402
+from complaint_processor.schemas import REPORT_COLUMNS, ProcessingResult  # noqa: E402
 
 STATUS_ICON = {"success": "✅", "partial": "⚠️", "failed": "❌"}
 

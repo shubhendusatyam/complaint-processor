@@ -1,0 +1,30 @@
+# Committed theme and server settings. Streamlit Community Cloud reads this file
+# the same way a local `streamlit run` does, so the hosted app and the local one
+# look identical.
+#
+# Secrets do NOT belong here. Locally they go in .streamlit/secrets.toml, which
+# is git-ignored; on Community Cloud they go in the app's Secrets panel.
+
+[theme]
+base = "light"
+primaryColor = "#1f6feb"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f3f5f8"
+textColor = "#1f2328"
+borderColor = "#d7dce2"
+
+# Used by the status icons and the report table.
+redColor = "#cf222e"
+orangeColor = "#bf8700"
+greenColor = "#1a7f37"
+
+[theme.sidebar]
+backgroundColor = "#f7f9fb"
+
+[server]
+# Complaint documents are small; this is well clear of them and keeps a stray
+# large upload from being read into memory.
+maxUploadSize = 10
+
+[browser]
+gatherUsageStats = false

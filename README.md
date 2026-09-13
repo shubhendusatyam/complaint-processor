@@ -332,6 +332,32 @@ fails to import and the platform reports only that the invocation failed.
 The CLI and the Streamlit app remain the primary interfaces, and both run
 locally as the specification intends.
 
+### Streamlit Community Cloud
+
+The Streamlit app cannot go on Vercel, but it deploys as-is to Streamlit
+Community Cloud, which runs a persistent process:
+
+1. Push to GitHub, then create the app at <https://share.streamlit.io> pointing
+   at this repository, branch `main`, main file `app.py`.
+2. Open **Settings → Secrets** and paste the contents of
+   `.streamlit/secrets.toml.example` with your real key substituted. Secrets are
+   TOML, not `.env` syntax, and are never committed.
+3. Deploy. Dependencies come from `requirements.txt`.
+
+`.streamlit/config.toml` is committed and read by both the hosted app and a
+local `streamlit run`, so the two look the same.
+
+The one seam worth knowing about is how the key arrives. Community Cloud hands
+credentials to `st.secrets`, while `config.py` reads the environment and builds
+its `Settings` at import time. `app.py` therefore copies the secrets it
+recognizes into the environment *before* importing the package — which is why
+those imports sit below a function call rather than at the top of the file. An
+environment variable that is already set always wins, so a local `.env` is never
+overridden and the bridge does nothing at all when running locally.
+
+The two deployments are independent and can coexist: the Vercel function serves
+the JSON API, Community Cloud serves the UI, and both run the same orchestrator.
+
 ---
 
 ## Technologies

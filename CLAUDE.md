@@ -57,6 +57,8 @@ A `ProcessingResult` has three states, not two. `failed` means no extraction, `p
 
 **Write every output file with `encoding="utf-8"`.** Generated emails contain curly quotes and other non-ASCII characters, and the Windows default codepage mangles or rejects them.
 
+`app.py` deploys to Streamlit Community Cloud, which cannot be Vercel because Streamlit needs a persistent process. That platform supplies the key through `st.secrets` while `config.py` reads the environment at import time, so `app.py` copies secrets into `os.environ` before importing the package — that is why its package imports sit below a function call and carry `# noqa: E402`. Do not reorder them. `.streamlit/config.toml` is committed; `.streamlit/secrets.toml` is ignored and `.streamlit/secrets.toml.example` documents its shape.
+
 The rule that keeps this clean: entry points and the Streamlit app hold no prompt text and make no API calls. Both delegate to the orchestration layer. If a prompt string appears in the Streamlit file, the layering has broken down.
 
 ## Commands
