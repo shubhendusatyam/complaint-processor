@@ -6,8 +6,5 @@
       "memory": 1024,
       "excludeFiles": "{tests/**,output/**,.venv/**,**/__pycache__/**,plan.md,project_details.docx}"
     }
-  },
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index.py" }
-  ]
+  }
 }

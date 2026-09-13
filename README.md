@@ -304,8 +304,21 @@ Deploying to Vercel:
 1. Import the repository at <https://vercel.com/new>.
 2. Add `OPENAI_API_KEY` under **Settings → Environment Variables**. The key is
    supplied by the platform, never committed — `.env` is for local runs only.
-3. Deploy. `vercel.json` routes every path to the function and allows 60
-   seconds per request.
+3. Deploy. `vercel.json` allows 60 seconds per request and trims the bundle.
+
+`pyproject.toml` carries one setting, `tool.vercel.entrypoint`, and it is load
+bearing. Vercel resolves a FastAPI app by scanning the project root for
+`app.py`, `index.py`, `server.py`, `main.py`, `wsgi.py` or `asgi.py`. Two of
+those names are already taken here by things that are not ASGI apps — `app.py`
+is the Streamlit interface, `main.py` is the CLI — so the entrypoint is named
+explicitly rather than guessed at. With it set, Vercel routes every request to
+the app and no rewrite rules are needed.
+
+New deployments have **Deployment Protection** enabled by default, which answers
+every request with a redirect to a Vercel login page. That is a project setting,
+not a code problem: a browser signed in to the Vercel account gets through while
+`curl` and any other client get a 302. Turn it off under **Settings → Deployment
+Protection** if the API is meant to be callable.
 
 If a deployment does misbehave, `GET /api/diagnostics` reports whether the
 package was bundled, the Python version, and whether the key is set, without

@@ -30,8 +30,8 @@ from threading import Lock
 # repository root on the path for us.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi.responses import HTMLResponse, JSONResponse
 
 # The package is bundled by the includeFiles glob in vercel.json, not by the
 # runtime's own dependency detection. If that glob is ever wrong the import
@@ -338,3 +338,23 @@ INDEX_HTML = """<!doctype html>
 @app.get("/", response_class=HTMLResponse)
 def index() -> str:
     return INDEX_HTML
+
+
+# Declared last, so it only sees what nothing above matched. A bare 404 from a
+# serverless deployment is ambiguous: it cannot be told apart from the platform
+# never reaching the app, and it does not say which path arrived. Reporting the
+# path turns a routing misconfiguration into something readable from outside.
+@app.api_route("/{unmatched:path}", methods=["GET", "POST"], include_in_schema=False)
+def catch_all(request: Request, unmatched: str) -> JSONResponse:
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": f"No route matches {request.url.path!r}",
+            "received_path": request.url.path,
+            "root_path": request.scope.get("root_path", ""),
+            "method": request.method,
+            "available_routes": sorted(
+                route.path for route in app.routes if getattr(route, "path", "").startswith("/")
+            ),
+        },
+    )
