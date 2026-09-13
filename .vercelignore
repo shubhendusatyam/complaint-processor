@@ -1,0 +1,14 @@
+# Keep the serverless bundle small and free of local-only artifacts.
+.venv/
+__pycache__/
+.pytest_cache/
+tests/
+output/
+app.py
+main.py
+plan.md
+project_details.docx
+desktop.ini
+.env
+
+# data/ is NOT ignored: the sample documents back GET /api/samples.

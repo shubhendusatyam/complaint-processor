@@ -100,11 +100,15 @@ def _build_settings() -> Settings:
 settings = _build_settings()
 
 
-def validate(config: Settings | None = None) -> Settings:
+def validate(config: Settings | None = None, require_data_dir: bool = True) -> Settings:
     """Check that the settings are usable before any API call is attempted.
 
     Called by the entry points rather than at import time, so that tests and
     tooling can import this package without a key present.
+
+    require_data_dir is for callers that supply their own documents instead of
+    reading the batch folder. An upload has nothing to do with data/ existing,
+    and rejecting one on a missing folder would report the wrong cause.
     """
     config = config or settings
 
@@ -127,7 +131,7 @@ def validate(config: Settings | None = None) -> Settings:
     if config.max_workers < 1:
         raise ConfigError(f"MAX_WORKERS must be at least 1, got {config.max_workers}")
 
-    if not config.data_dir.is_dir():
+    if require_data_dir and not config.data_dir.is_dir():
         raise ConfigError(
             f"Input folder not found: {config.data_dir}\n"
             "Create it and add the complaint documents to process."

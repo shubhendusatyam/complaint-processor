@@ -98,8 +98,12 @@ Project1/
 ├── tests/                   74 tests; the LLM is stubbed, so they cost nothing
 ├── data/                    five sample complaint documents
 ├── output/                  a committed sample run of those documents
+├── api/
+│   ├── index.py             HTTP entry point (FastAPI, deployed to Vercel)
+│   └── requirements.txt     deployment-only dependency set
 ├── main.py                  command line entry point
 ├── app.py                   Streamlit entry point
+├── vercel.json              serverless function config
 └── requirements.txt
 ```
 
@@ -184,6 +188,32 @@ streamlit run app.py
 
 Opens at <http://localhost:8501>. Either upload documents directly or process the `data/` folder, then inspect each case across three tabs: extracted data, the generated email, and the case summary.
 
+### HTTP API
+
+A third interface onto the same workflow, for deployment. It processes **one
+document per request** and returns JSON.
+
+```powershell
+pip install fastapi python-multipart uvicorn
+python -m uvicorn api.index:app --reload
+```
+
+Opens at <http://localhost:8000>, which serves a minimal upload form.
+
+| Route | Purpose |
+| --- | --- |
+| `GET /api/health` | Readiness and whether the API key is configured |
+| `GET /api/samples` | Names of the documents in `data/` |
+| `POST /api/process` | Process one uploaded file (multipart `file` field) |
+| `POST /api/process/sample/{name}` | Process one committed sample |
+
+```powershell
+curl.exe -F "file=@data/complaint_001.txt" http://localhost:8000/api/process
+```
+
+A document that fails returns HTTP 200 with `"status": "failed"` and a reason,
+matching how a failure is recorded in the batch report rather than aborting it.
+
 ### Tests
 
 ```powershell
@@ -243,6 +273,36 @@ The five documents in `data/` are deliberately varied rather than near-duplicate
 **`contains no extractable text`** — the PDF is a scanned image. Text extraction cannot read it; that would need optical character recognition, which is out of scope here.
 
 **A document is reported as `failed`** — the reason is in the report's `error` column and in `output/run.log`. The rest of the batch is unaffected.
+
+---
+
+## Deployment
+
+The Streamlit app cannot be hosted on a serverless platform: it is a long-lived
+process holding a WebSocket per browser. `api/index.py` exists so the workflow
+can still be reached over HTTP, as a stateless request/response function.
+
+Three constraints shape it, all imposed by the runtime:
+
+- **One document per request.** A whole batch of LLM calls does not fit inside
+  the function timeout, and there is no durable disk to write a report to.
+- **`/tmp` is the only writable path.** Uploads are staged there and the log
+  file is redirected there; the repository filesystem is read-only at runtime.
+- **The bundle has a size limit.** `api/requirements.txt` therefore omits
+  `streamlit`, `pandas` and `pytest`, none of which the HTTP layer imports.
+  Keeping them out takes the bundle from roughly 400 MB to about 110 MB,
+  against a 250 MB ceiling.
+
+Deploying to Vercel:
+
+1. Import the repository at <https://vercel.com/new>.
+2. Add `OPENAI_API_KEY` under **Settings → Environment Variables**. The key is
+   supplied by the platform, never committed — `.env` is for local runs only.
+3. Deploy. `vercel.json` routes every path to the function and allows 60
+   seconds per request.
+
+The CLI and the Streamlit app remain the primary interfaces, and both run
+locally as the specification intends.
 
 ---
 
