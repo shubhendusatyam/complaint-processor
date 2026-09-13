@@ -98,11 +98,9 @@ Project1/
 ├── tests/                   74 tests; the LLM is stubbed, so they cost nothing
 ├── data/                    five sample complaint documents
 ├── output/                  a committed sample run of those documents
-├── api/
-│   ├── index.py             HTTP entry point (FastAPI, deployed to Vercel)
-│   └── requirements.txt     deployment-only dependency set
 ├── main.py                  command line entry point
 ├── app.py                   Streamlit entry point
+├── server.py                HTTP entry point (FastAPI, deployed to Vercel)
 ├── vercel.json              serverless function config
 └── requirements.txt
 ```
@@ -195,7 +193,7 @@ document per request** and returns JSON.
 
 ```powershell
 pip install uvicorn                       # the rest comes from requirements.txt
-python -m uvicorn api.index:app --reload
+python -m uvicorn server:app --reload
 ```
 
 Opens at <http://localhost:8000>, which serves a minimal upload form.
@@ -280,7 +278,7 @@ The five documents in `data/` are deliberately varied rather than near-duplicate
 ## Deployment
 
 The Streamlit app cannot be hosted on a serverless platform: it is a long-lived
-process holding a WebSocket per browser. `api/index.py` exists so the workflow
+process holding a WebSocket per browser. `server.py` exists so the workflow
 can still be reached over HTTP, as a stateless request/response function.
 
 Three constraints shape it, all imposed by the runtime:
@@ -291,7 +289,7 @@ Three constraints shape it, all imposed by the runtime:
   file is redirected there; the repository filesystem is read-only at runtime.
 - **Dependencies are read only from the project root.** `fastapi` and
   `python-multipart` therefore live in `requirements.txt`, not beside the
-  entrypoint. A `requirements.txt` next to `api/index.py` is ignored, and the
+  entrypoint. A `requirements.txt` placed anywhere else is ignored, and the
   function then crashes on `ModuleNotFoundError: No module named 'fastapi'`.
 
 There is no tree-shaking: every project file reachable at build time is bundled,
@@ -306,13 +304,19 @@ Deploying to Vercel:
    supplied by the platform, never committed — `.env` is for local runs only.
 3. Deploy. `vercel.json` allows 60 seconds per request and trims the bundle.
 
-`pyproject.toml` carries one setting, `tool.vercel.entrypoint`, and it is load
-bearing. Vercel resolves a FastAPI app by scanning the project root for
-`app.py`, `index.py`, `server.py`, `main.py`, `wsgi.py` or `asgi.py`. Two of
-those names are already taken here by things that are not ASGI apps — `app.py`
-is the Streamlit interface, `main.py` is the CLI — so the entrypoint is named
-explicitly rather than guessed at. With it set, Vercel routes every request to
-the app and no rewrite rules are needed.
+The entrypoint is resolved by filename, which is why the HTTP layer is
+`server.py` at the project root rather than something more descriptive deeper
+in the tree. Vercel scans the root for `app.py`, `index.py`, `server.py`,
+`main.py`, `wsgi.py`, `asgi.py` and takes the first that exports an ASGI `app`.
+Two of those names are already taken here by things that are not ASGI apps, so
+`.vercelignore` excludes `app.py` and `main.py` from the deployment — that
+exclusion is load bearing, not tidying. Once resolved, Vercel routes every
+request to the app, so no rewrite rules are needed.
+
+Pinning the entrypoint through `tool.vercel.entrypoint` in a `pyproject.toml`
+is the documented alternative, but it is not usable here: the moment that file
+exists the runtime installs dependencies from it with `uv` instead of reading
+`requirements.txt`, which would mean maintaining the dependency list twice.
 
 New deployments have **Deployment Protection** enabled by default, which answers
 every request with a redirect to a Vercel login page. That is a project setting,

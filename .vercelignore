@@ -4,11 +4,19 @@ __pycache__/
 .pytest_cache/
 tests/
 output/
-app.py
-main.py
 plan.md
 project_details.docx
 desktop.ini
 .env
+
+# app.py and main.py are excluded for a second reason, and it is load bearing.
+# Vercel resolves the ASGI entrypoint by scanning the project root in this
+# order: app.py, index.py, server.py, main.py, wsgi.py, asgi.py. Here app.py is
+# the Streamlit interface and main.py is the CLI, and neither exports an ASGI
+# app, so leaving them visible makes the build fail on the first name it finds.
+# Excluding them lets server.py be resolved instead. Both still ship in git and
+# are how the project is run locally; this file only affects the deployment.
+app.py
+main.py
 
 # data/ is NOT ignored: the sample documents back GET /api/samples.

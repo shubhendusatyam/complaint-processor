@@ -15,7 +15,11 @@ serverless runtime:
   * Results come back as JSON. The reporting layer is never imported, which
     also keeps pandas and streamlit out of the deployment bundle.
 
-Vercel serves the module-level `app` below as an ASGI application.
+Vercel serves the module-level `app` below as an ASGI application. The file has
+to live at the project root under one of the names the runtime scans for, and
+it has to be server.py specifically: app.py and main.py are the two other names
+it would accept, and both are already taken here by things that are not ASGI
+applications.
 """
 
 from __future__ import annotations
@@ -26,19 +30,18 @@ import tempfile
 from pathlib import Path
 from threading import Lock
 
-# api/ sits one level below the package, and the runtime does not put the
-# repository root on the path for us.
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+# This file sits beside the package, but the deployed runtime does not
+# necessarily put the project root on the path, so say it explicitly.
+PROJECT_ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
 
-# The package is bundled by the includeFiles glob in vercel.json, not by the
-# runtime's own dependency detection. If that glob is ever wrong the import
-# below is what breaks, and a bare failure here would take the whole module
-# down as an opaque FUNCTION_INVOCATION_FAILED with the cause only in the
-# platform logs. Capturing it instead lets the deployment report its own
-# problem over HTTP.
+# Every reachable project file is bundled, so this import should always resolve.
+# If it ever does not, a bare failure here would take the whole module down as an
+# opaque FUNCTION_INVOCATION_FAILED with the cause visible only in the platform
+# logs. Capturing it instead lets the deployment report its own problem.
 IMPORT_ERROR: str | None = None
 _IMPORT_TRACEBACK: str | None = None
 
@@ -210,7 +213,7 @@ def diagnostics() -> dict:
     package was bundled at all. It reveals no secrets: environment variables are
     reported as present or absent, never by value.
     """
-    root = Path(__file__).resolve().parent.parent
+    root = PROJECT_ROOT
     try:
         listing = sorted(entry.name for entry in root.iterdir())
     except Exception as exc:
