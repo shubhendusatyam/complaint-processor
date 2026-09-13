@@ -18,5 +18,11 @@ pandas>=2.2.0
 # User interface
 streamlit>=1.39.0
 
+# HTTP interface (api/index.py, and the deployed function).
+# These must live here rather than beside the entrypoint: the Python runtime
+# reads dependencies only from the project root.
+fastapi>=0.115.0
+python-multipart>=0.0.9
+
 # Testing
 pytest>=8.3.0

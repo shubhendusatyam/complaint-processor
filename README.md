@@ -194,7 +194,7 @@ A third interface onto the same workflow, for deployment. It processes **one
 document per request** and returns JSON.
 
 ```powershell
-pip install fastapi python-multipart uvicorn
+pip install uvicorn                       # the rest comes from requirements.txt
 python -m uvicorn api.index:app --reload
 ```
 
@@ -289,21 +289,23 @@ Three constraints shape it, all imposed by the runtime:
   the function timeout, and there is no durable disk to write a report to.
 - **`/tmp` is the only writable path.** Uploads are staged there and the log
   file is redirected there; the repository filesystem is read-only at runtime.
-- **The bundle has a size limit.** `api/requirements.txt` therefore omits
-  `streamlit`, `pandas` and `pytest`, none of which the HTTP layer imports.
-  Keeping them out takes the bundle from roughly 400 MB to about 110 MB,
-  against a 250 MB ceiling.
+- **Dependencies are read only from the project root.** `fastapi` and
+  `python-multipart` therefore live in `requirements.txt`, not beside the
+  entrypoint. A `requirements.txt` next to `api/index.py` is ignored, and the
+  function then crashes on `ModuleNotFoundError: No module named 'fastapi'`.
+
+There is no tree-shaking: every project file reachable at build time is bundled,
+so `complaint_processor/` and `data/` ship without being named anywhere.
+`excludeFiles` in `vercel.json` keeps tests, `output/` and the spec out, well
+inside the 500 MB bundle limit.
 
 Deploying to Vercel:
 
 1. Import the repository at <https://vercel.com/new>.
 2. Add `OPENAI_API_KEY` under **Settings → Environment Variables**. The key is
    supplied by the platform, never committed — `.env` is for local runs only.
-3. Deploy. `vercel.json` routes every path to the function, allows 60 seconds
-   per request, and — importantly — names `complaint_processor/` and `data/` in
-   `includeFiles`. The runtime bundles the entrypoint and its declared
-   dependencies, not sibling packages, so without that glob the import fails and
-   every request returns `FUNCTION_INVOCATION_FAILED`.
+3. Deploy. `vercel.json` routes every path to the function and allows 60
+   seconds per request.
 
 If a deployment does misbehave, `GET /api/diagnostics` reports whether the
 package was bundled, the Python version, and whether the key is set, without
